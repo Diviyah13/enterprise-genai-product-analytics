@@ -1,44 +1,64 @@
-Enterprise GenAI Product Analytics
-A synthetic portfolio project demonstrating how raw interaction data from an enterprise GenAI assistant can be transformed into validated adoption, engagement and client-level KPIs.
-Project Overview
-The purpose of this project is to demonstrate an end-to-end product analytics workflow for an enterprise AI assistant.
-The project covers the full process from raw interaction logs to final reporting, including:
-	•	data cleaning
-	•	duplicate handling
-	•	test and demo account exclusions
-	•	internal-user exclusions
-	•	KPI definition
-	•	user and organisation-level aggregation
-	•	conversation-thread analysis
-	•	multi-turn engagement measurement
-	•	month-on-month growth analysis
-	•	client segmentation
-	•	validation and reconciliation
-	•	Excel dashboard reporting
-All data, organisations, users, identifiers and performance figures in this repository are completely synthetic.
+# Enterprise GenAI Product Analytics
+
+A synthetic product analytics project demonstrating how raw interaction data from an enterprise GenAI assistant can be transformed into validated **adoption, engagement and client-level KPIs**.
+
+> **Portfolio note:** All organisations, users, identifiers, timestamps and performance figures in this repository are completely synthetic. No employer or client data is included.
+
+---
+
 ## Dashboard Preview
+
 ![Enterprise GenAI Product Analytics Dashboard](images/dashboard_overview.png)
 
-![Analytics Workflow](images/analytics_workflow.png)
+---
 
-Business Problem
-Measuring usage of an AI assistant is not as simple as counting database rows.
-Product teams may want to understand:
-	•	How many questions are users asking?
-	•	How many users are actively using the AI assistant?
-	•	How many client organisations are adopting it?
-	•	Are users continuing conversations after the first question?
-	•	Which client segments demonstrate stronger usage?
-	•	Is AI usage growing month over month?
-These questions require different aggregation levels and clearly defined business rules.
-Analytics Workflow
+## Project Overview
+
+The goal of this project is to demonstrate an end-to-end analytics workflow for measuring usage of an enterprise GenAI assistant.
+
+The project covers:
+
+- Data cleaning and deduplication
+- Test and demo account exclusions
+- Internal-user exclusions
+- KPI definition
+- User-level and organisation-level aggregation
+- Conversation-thread analysis
+- Multi-turn engagement measurement
+- Month-on-month growth analysis
+- Client segmentation
+- Data validation and reconciliation
+- Excel dashboard reporting
+
+---
+
+## Business Problem
+
+Measuring AI adoption is not as simple as counting database rows.
+
+Important product questions include:
+
+- How many questions are users asking?
+- How many users are actively using the assistant?
+- How many client organisations are adopting it?
+- Are users continuing conversations after their first question?
+- Which client segments demonstrate stronger engagement?
+- Is AI usage growing month over month?
+
+Each question requires a different aggregation level and a clearly defined business rule.
+
+---
+
+## Analytics Workflow
+
+```text
 Raw Interaction Logs
         ↓
 Data Cleaning
         ↓
 Valid Analytical Population
         ↓
-Core Usage Metrics
+Core Usage KPIs
         ↓
 Conversation Engagement
         ↓
@@ -46,106 +66,155 @@ Client Segment Analysis
         ↓
 Validation
         ↓
-Excel Reporting
-Data Model
-The synthetic dataset uses four main entities:
+Excel Dashboard
+```
+
+---
+
+## Data Model
+
+The synthetic dataset represents four primary entities:
+
+```text
 Organisations
-    │
-    ├── Users
-    │
-    └── Threads
+     │
+     ├── Users
+     │
+     └── Threads
             │
             └── Messages
-The project analyses behaviour at multiple levels:
-Level
-Example Metric
-Message
-Questions Asked
-User
-Unique Users
-Organisation
-Active Organisations
-Thread
-Multi-turn Threads
-Month
-MoM Usage Growth
-Segment
-Questions per Organisation
-Core Metrics
-The project includes the following KPIs:
-Metric
-Purpose
-Questions Asked
-Measures total AI usage volume
-Unique Users
-Measures breadth of user adoption
-Active Organisations
-Measures client-level adoption
-Threads
-Measures conversation starts
-Multi-turn Threads
-Measures deeper conversational engagement
-Multi-turn Rate
-Measures the percentage of conversations continuing beyond one question
-Questions per Organisation
-Measures client-level usage depth
-Questions per User
-Measures user-level usage depth
-MoM Question Growth
-Measures monthly change in AI usage
-Full definitions are available in:
-documentation/metric_dictionary.md
-Data Cleaning
-Before calculating KPIs, the raw interaction data is cleaned to remove activity that should not contribute to client product analytics.
-The cleaning logic excludes:
-	•	assistant-response events
-	•	test organisations
-	•	demo organisations
-	•	internal users
-	•	duplicate message events
-Stable IDs are used as the source of truth rather than organisation or user names.
-The SQL cleaning logic is available in:
-sql/01_data_cleaning.sql
-Multi-turn Engagement
-One of the key engagement measures in this project is the multi-turn conversation rate.
-A thread with one valid user question is classified as single-turn.
-A thread with more than one valid user question is classified as multi-turn.
+```
+
+Different metrics are calculated at different analytical levels:
+
+| Level | Example Metric |
+|---|---|
+| Message | Questions Asked |
+| User | Unique Users |
+| Organisation | Active Organisations |
+| Thread | Multi-turn Threads |
+| Month | MoM Usage Growth |
+| Client Segment | Questions per Organisation |
+
+For more detail, see [Data Model](documentation/data_model.md).
+
+---
+
+## Core KPIs
+
+| Metric | Business Purpose |
+|---|---|
+| Questions Asked | Measures total AI usage volume |
+| Unique Users | Measures breadth of user adoption |
+| Active Organisations | Measures client-level adoption |
+| Threads | Measures AI conversation starts |
+| Multi-turn Threads | Measures deeper conversational engagement |
+| Multi-turn Rate | Measures conversations continuing beyond one question |
+| Questions per Organisation | Measures client-level usage depth |
+| Questions per User | Measures user-level usage depth |
+| MoM Question Growth | Measures monthly usage growth or decline |
+
+Full definitions are available in the [Metric Dictionary](documentation/metric_dictionary.md).
+
+---
+
+## Data Cleaning
+
+KPIs are not calculated directly from raw event logs.
+
+The analytical population is first cleaned by:
+
+1. Keeping user-question events only
+2. Removing test organisations
+3. Removing demo organisations
+4. Removing internal-user activity
+5. Deduplicating message IDs
+6. Using stable IDs as aggregation keys
+
+The cleaning SQL is available here:
+
+[01_data_cleaning.sql](sql/01_data_cleaning.sql)
+
+---
+
+## Multi-turn Engagement
+
+One of the key metrics in this project is **multi-turn conversation rate**.
+
+A thread containing only one valid user question is classified as **single-turn**.
+
+A thread containing more than one valid user question is classified as **multi-turn**.
+
+Example:
+
+```text
 Thread A
+
 Question 1
+    ↓
 Assistant Response
+    ↓
 Question 2
+    ↓
 Assistant Response
 
-Result: Multi-turn
-This metric provides a simple proxy for deeper conversational engagement rather than measuring only raw question volume.
-Client Segment Analysis
-The synthetic organisations are grouped into:
-	•	Enterprise
-	•	Mid-Market
-	•	SME
-Usage and engagement can therefore be compared across client segments using metrics such as:
-	•	questions asked
-	•	unique users
-	•	active organisations
-	•	conversation threads
-	•	multi-turn rate
-	•	questions per organisation
-Validation Approach
-The project includes validation checks for:
-	•	duplicate message IDs
-	•	internal-user leakage
-	•	test and demo organisation leakage
-	•	monthly question reconciliation
-	•	thread-level reconciliation
-	•	multi-turn rate boundaries
-	•	organisation-level aggregation
-	•	user-level aggregation
-	•	month-on-month calculations
-	•	segment reconciliation
-	•	timestamp boundaries
+Classification: Multi-turn
+```
+
+This provides a simple proxy for conversational depth rather than relying only on raw question volume.
+
+See the SQL implementation:
+
+[03_multi_turn_engagement.sql](sql/03_multi_turn_engagement.sql)
+
+---
+
+## Client Segment Analysis
+
+Synthetic organisations are grouped into:
+
+- Enterprise
+- Mid-Market
+- SME
+
+The analysis compares segments using:
+
+- Questions asked
+- Unique users
+- Active organisations
+- Conversation threads
+- Multi-turn rate
+- Questions per organisation
+
 See:
-documentation/validation_notes.md
-Project Structure
+
+[04_segment_analysis.sql](sql/04_segment_analysis.sql)
+
+---
+
+## Validation
+
+Validation checks include:
+
+- Duplicate message detection
+- Internal-user leakage
+- Test/demo organisation leakage
+- Monthly question reconciliation
+- Thread reconciliation
+- Multi-turn rate validation
+- Organisation-level aggregation checks
+- User-level aggregation checks
+- MoM calculation checks
+- Segment reconciliation
+- Timestamp boundary validation
+
+Full details are documented in [Validation Notes](documentation/validation_notes.md).
+
+---
+
+## Project Structure
+
+```text
 enterprise-genai-product-analytics/
 │
 ├── data/
@@ -169,28 +238,44 @@ enterprise-genai-product-analytics/
 │   └── validation_notes.md
 │
 ├── images/
+│   └── dashboard_overview.png
 │
 └── README.md
-Technologies
-	•	SQL
-	•	Microsoft Excel
-	•	Power Query-style transformation logic
-	•	Product Analytics
-	•	KPI Design
-	•	Data Validation
-	•	Customer Segmentation
-Key Analytical Lessons
-This project demonstrates that analytics is not only about writing queries.
-A technically correct number can still represent the wrong business metric if the analytical population, aggregation level or KPI definition is unclear.
-Important considerations include:
-	•	defining what counts as valid activity
-	•	selecting the correct aggregation level
-	•	removing non-client activity
-	•	avoiding duplicate records
-	•	separating usage volume from adoption breadth
-	•	distinguishing single interactions from deeper engagement
-	•	validating results before reporting
-Confidentiality Notice
+```
+
+---
+
+## Technologies & Skills Demonstrated
+
+- SQL
+- Microsoft Excel
+- Product Analytics
+- KPI Design
+- Data Cleaning
+- Data Validation
+- Customer Segmentation
+- Month-on-Month Analysis
+- Relational Data Modelling
+- GenAI Product Analytics
+
+---
+
+## Key Learning
+
+A technically correct query does not automatically produce the correct business metric.
+
+The analytical population, aggregation level and KPI definition must be clearly established before reporting.
+
+This project demonstrates the process of moving from:
+
+**Raw product events → clean analytical data → defined KPIs → validated metrics → business insight**
+
+---
+
+## Confidentiality
+
 This repository is a synthetic recreation inspired by professional analytics work.
-No employer data, client information, proprietary source code, internal database schemas, credentials or confidential performance metrics are included.
-All organisations, users, IDs, timestamps and analytical results are fictional and were created solely for portfolio demonstration purposes.
+
+No employer data, client information, production database schemas, proprietary source code, credentials or confidential performance metrics are included.
+
+All records and analytical results were created solely for portfolio demonstration purposes.
