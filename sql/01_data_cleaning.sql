@@ -1,30 +1,70 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2870
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-{\*\expandedcolortbl;;}
-\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+-- Enterprise GenAI Product Analytics
+-- Synthetic portfolio project
+--
+-- Purpose:
+-- Create a clean analytical population from raw AI interaction logs
+-- before calculating product KPIs.
 
-\f0\fs24 \cf0 -- Enterprise GenAI Product Analytics\
--- Synthetic portfolio project\
--- Purpose:\
--- Calculate monthly AI usage metrics from cleaned interaction data.\
-\
-SELECT\
-    DATE_FORMAT(message_timestamp, '%Y-%m') AS month,\
-\
-    COUNT(DISTINCT message_id) AS questions_asked,\
-\
-    COUNT(DISTINCT user_id) AS unique_users,\
-\
-    COUNT(DISTINCT organisation_id) AS active_organisations,\
-\
-    COUNT(DISTINCT thread_id) AS total_threads\
-\
-FROM clean_questions\
-\
-GROUP BY\
-    DATE_FORMAT(message_timestamp, '%Y-%m')\
-\
-ORDER BY\
-    month;}
+WITH deduplicated_messages AS (
+
+    SELECT
+        message_id,
+        thread_id,
+        user_id,
+        organisation_id,
+        message_timestamp,
+        message_type,
+
+        ROW_NUMBER() OVER (
+            PARTITION BY message_id
+            ORDER BY message_timestamp
+        ) AS duplicate_rank
+
+    FROM raw_messages
+),
+
+valid_messages AS (
+
+    SELECT
+        m.message_id,
+        m.thread_id,
+        m.user_id,
+        m.organisation_id,
+        m.message_timestamp
+
+    FROM deduplicated_messages m
+
+    INNER JOIN organisations o
+        ON m.organisation_id = o.organisation_id
+
+    INNER JOIN users u
+        ON m.user_id = u.user_id
+
+    WHERE
+        -- Keep one record per message
+        m.duplicate_rank = 1
+
+        -- Count user questions only
+        AND m.message_type = 'question'
+
+        -- Remove non-client activity
+        AND o.is_test = 0
+        AND o.is_demo = 0
+        AND u.is_internal = 0
+)
+
+SELECT
+    message_id,
+    thread_id,
+    user_id,
+    organisation_id,
+    message_timestamp,
+
+    DATE_FORMAT(
+        message_timestamp,
+        '%Y-%m'
+    ) AS month
+
+FROM valid_messages
+
+ORDER BY message_timestamp;
